@@ -1,0 +1,78 @@
+// Service catalog — every service exposes:
+//   cost, reliability, speed (latency) and a primary + backup provider.
+
+export const CATALOG = {
+  research: {
+    id: "research",
+    name: "Research API",
+    cost: 0.005,
+    reliability: 0.91,
+    latency: 1.1,
+    primary: "research-primary.x402.dev",
+    backup: "research-backup.x402.dev",
+  },
+  news: {
+    id: "news",
+    name: "News API",
+    cost: 0.004,
+    reliability: 0.95,
+    latency: 0.9,
+    primary: "news-primary.x402.dev",
+    backup: "news-backup.x402.dev",
+  },
+  writing: {
+    id: "writing",
+    name: "Writing API",
+    cost: 0.008,
+    reliability: 0.9,
+    latency: 1.8,
+    primary: "writing-primary.x402.dev",
+    backup: "writing-backup.x402.dev",
+  },
+  grammar: {
+    id: "grammar",
+    name: "Grammar API",
+    cost: 0.001,
+    reliability: 0.98,
+    latency: 0.6,
+    primary: "grammar-primary.x402.dev",
+    backup: "grammar-backup.x402.dev",
+  },
+  code: {
+    id: "code",
+    name: "Code API",
+    cost: 0.01,
+    reliability: 0.94,
+    latency: 0.8,
+    primary: "code-primary.x402.dev",
+    backup: "code-backup.x402.dev",
+  },
+  review: {
+    id: "review",
+    name: "Review API",
+    cost: 0.002,
+    reliability: 0.93,
+    latency: 1.5,
+    primary: "review-primary.x402.dev",
+    backup: "review-backup.x402.dev",
+  },
+  weather: {
+    id: "weather",
+    name: "Weather API",
+    cost: 0.001,
+    reliability: 0.99,
+    latency: 0.4,
+    primary: "weather-primary.x402.dev",
+    backup: "weather-backup.x402.dev",
+  },
+};
+
+export const OUTPUT_TOKENS = {
+  research: 1284,
+  news: 340,
+  writing: 860,
+  grammar: 120,
+  code: 540,
+  review: 210,
+  weather: 60,
+};

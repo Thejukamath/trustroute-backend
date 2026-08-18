@@ -1,0 +1,19 @@
+{
+  "name": "trustroute-server",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "dev": "node --watch index.js",
+    "start": "node index.js",
+    "setup-wallet": "node scripts/setup-wallet.js",
+    "check-wallet": "node scripts/check-wallet.js"
+  },
+  "dependencies": {
+    "algosdk": "^3.6.0",
+    "cors": "^2.8.5",
+    "dotenv": "^17.4.2",
+    "express": "^4.21.2"
+  }
+}
