@@ -3,7 +3,8 @@
 // Every service has a provider chain:
 //   weather:   OpenWeather (primary) → WeatherAPI.com (backup) → simulated
 //   news:      GNews (primary) → NewsAPI.org (backup) → simulated
-//   research:  Google Gemini (primary) → OpenAI → Anthropic Claude → simulated
+//   research:  Google Gemini (primary) → OpenAI → Anthropic Claude →
+//              Wikipedia (free, no key) → simulated
 //   writing:   Google Gemini (primary) → OpenAI → Anthropic Claude → simulated
 //   grammar / code / review: simulated
 //
@@ -12,7 +13,10 @@
 // and the next provider in the chain is tried. Set DEMO_FAILOVER=1 to force
 // the primary provider to fail once, so the failover path is always visible
 // in a demo. The simulated provider is always last, so the app keeps working
-// without any API keys (hackathon mode).
+// without any API keys (hackathon mode). Wikipedia sits just above the
+// simulator: it needs NO API key, so "custom" questions (e.g. "information
+// about semiconductors") get a REAL, topic-specific answer even on a fresh
+// deployment — the simulator is only reached when Wikipedia has no article.
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -213,6 +217,33 @@ async function geminiChat(system, task, maxTokens) {
   return text.trim();
 }
 
+// ── free encyclopedic provider (no API key required) ─────────────────────────
+
+// Turn "information about semiconductors" / "what is X" / "tell me about X"
+// into a plain topic title ("Semiconductors").
+function extractTopic(task) {
+  let t = task.trim().replace(/[?.!]+$/, "");
+  t = t.replace(/^(?:information|info|details|facts|summary)\s+(?:about|on|regarding)\s+/i, "");
+  t = t.replace(/^(?:tell me|give me|get|show)\s+(?:me\s+)?(?:some\s+)?(?:information|info|details|facts)?\s*(?:about|on|regarding)\s+/i, "");
+  t = t.replace(/^(?:what|who|where|when|why|how)\s+(?:is|are|was|were)\s+/i, "");
+  t = t.replace(/^(?:the|latest|current|recent)\s+/i, "");
+  return t.trim() || task.trim();
+}
+
+async function wikipedia(task) {
+  const topic = encodeURIComponent(extractTopic(task));
+  const data = await httpJson(`https://en.wikipedia.org/api/rest_v1/page/summary/${topic}`, {
+    headers: { "User-Agent": "TrustRoute/1.0" },
+  });
+  if (!data.extract) throw new Error("No article found");
+  return {
+    text:
+      `Encyclopedic summary for "${data.title}" (via Wikipedia)\n\n` +
+      data.extract +
+      `\n\nSource: ${data.content_urls?.desktop?.page ?? "https://en.wikipedia.org"}`,
+  };
+}
+
 // ── simulated fallbacks (no keys / final fallback) ───────────────────────────
 
 const SIM_RESULTS = {
@@ -286,6 +317,13 @@ const CHAINS = {
       real: true,
       ready: () => Boolean(process.env.ANTHROPIC_API_KEY),
       run: (task) => anthropicChat(RESEARCH_SYSTEM, task, 420),
+    },
+    {
+      name: "Wikipedia",
+      display: "en.wikipedia.org/api/rest_v1/page/summary",
+      real: true,
+      ready: () => true, // free, no key needed
+      run: wikipedia,
     },
     {
       name: "Research (simulated)",
