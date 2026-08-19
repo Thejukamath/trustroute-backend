@@ -577,20 +577,13 @@ export async function fetchProvider(serviceId, task, logs, onResult) {
     const isPrimary = i === 0;
 
     if (!provider.ready()) {
-      const next = chain[i + 1];
+      // Clean demo message — no raw "API key not configured" internals.
       logs.add(
         "API_REQUEST",
-        `${provider.name} → skipped (API key not configured)`,
-        "error",
-        serviceId,
-        250
-      );
-      logs.add(
-        "FAILOVER_TRIGGERED",
-        `Failover triggered — switching provider: ${next ? next.name : "simulated fallback"}`,
+        "Primary unavailable → switching to backup provider",
         "warning",
         serviceId,
-        350
+        250
       );
       onResult("failover");
       continue;
@@ -600,18 +593,11 @@ export async function fetchProvider(serviceId, task, logs, onResult) {
     // failover path is always demonstrated even with working API keys.
     if (isPrimary && provider.real && DEMO_FAILOVER) {
       logs.add(
-        "API_REQUEST",
-        `GET ${provider.display} → HTTP 503 Service Unavailable (DEMO_FAILOVER)`,
-        "error",
-        serviceId,
-        300
-      );
-      logs.add(
         "FAILOVER_TRIGGERED",
-        `Failover triggered — switching provider: ${chain[i + 1].name}`,
+        "Primary unavailable → switching to backup provider (forced demo failover)",
         "warning",
         serviceId,
-        400
+        300
       );
       onResult("failover");
       failover = true;
@@ -638,20 +624,12 @@ export async function fetchProvider(serviceId, task, logs, onResult) {
         backup: i > 0,
       };
     } catch (err) {
-      const next = chain[i + 1];
-      logs.add(
-        "API_REQUEST",
-        `${provider.name} → failed (${String(err.message).slice(0, 90)})`,
-        "error",
-        serviceId,
-        300
-      );
       logs.add(
         "FAILOVER_TRIGGERED",
-        `Failover triggered — switching provider: ${next ? next.name : "simulated fallback"}`,
+        "Primary unavailable → switching to backup provider",
         "warning",
         serviceId,
-        400
+        300
       );
       onResult("failover");
       failover = true;
