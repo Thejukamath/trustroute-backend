@@ -14,6 +14,7 @@ import planRouter from "./routes/plan.js";
 import payRouter from "./routes/pay.js";
 import txRouter from "./routes/tx.js";
 import metricsRouter from "./routes/metrics.js";
+import agentRouter from "./routes/agent.js";
 import { getPaymentMode } from "./payment/x402Handler.js";
 
 const app = express();
@@ -40,6 +41,7 @@ app.use("/api/services", servicesRouter); // simulated x402 services
 app.use("/api/pay", payRouter); //        payment trigger (x402Handler)
 app.use("/api/tx", txRouter); //          transaction verification lookup
 app.use("/api/metrics", metricsRouter); // GoPlausible payment analytics
+app.use("/api/run-agent", agentRouter); // smart engine: classify → score → failover
 
 // ── production: serve the built client ───────────────────────────────────────
 const dist = path.join(__dirname, "..", "client", "dist");

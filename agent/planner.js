@@ -12,6 +12,11 @@ const RULES = [
     services: ["weather"],
   },
   {
+    id: "finance",
+    keywords: ["stock", "stocks", "price", "crypto", "bitcoin", "btc", "ethereum", "eth", "finance", "share", "shares", "ticker", "market"],
+    services: ["finance"],
+  },
+  {
     id: "code",
     keywords: ["code", "program", "app", "debug", "function", "script", "fix bug", "review code", "implement", "build", "api endpoint", "typescript"],
     services: ["code", "review"],

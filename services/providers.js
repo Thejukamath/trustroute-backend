@@ -138,6 +138,86 @@ async function newsApi(task) {
   };
 }
 
+// ── finance providers (crypto + stocks, no API key required) ─────────────────
+
+// "bitcoin price" / "btc" / "ethereum" → CoinGecko ids; company names → Stooq tickers.
+const CRYPTO_SYMBOLS = {
+  btc: "bitcoin",
+  bitcoin: "bitcoin",
+  eth: "ethereum",
+  ethereum: "ethereum",
+  doge: "dogecoin",
+  dogecoin: "dogecoin",
+  sol: "solana",
+  solana: "solana",
+  xrp: "ripple",
+  ripple: "ripple",
+  ada: "cardano",
+  cardano: "cardano",
+  algo: "algorand",
+  algorand: "algorand",
+};
+
+const COMPANY_TICKERS = {
+  apple: "aapl.us",
+  tesla: "tsla.us",
+  nvidia: "nvda.us",
+  microsoft: "msft.us",
+  google: "googl.us",
+  amazon: "amzn.us",
+  meta: "meta.us",
+  netflix: "nflx.us",
+};
+
+function extractFinSymbol(task) {
+  const t = task.toLowerCase();
+  for (const [key, id] of Object.entries(CRYPTO_SYMBOLS)) {
+    if (t.includes(key)) return { kind: "crypto", id };
+  }
+  for (const [key, ticker] of Object.entries(COMPANY_TICKERS)) {
+    if (t.includes(key)) return { kind: "stock", ticker };
+  }
+  return null;
+}
+
+async function coinGecko(task) {
+  const hit = extractFinSymbol(task);
+  if (!hit || hit.kind !== "crypto") throw new Error("No crypto symbol found in task");
+  const data = await httpJson(
+    `https://api.coingecko.com/api/v3/simple/price?ids=${hit.id}&vs_currencies=usd`
+  );
+  const price = data[hit.id]?.usd;
+  if (price == null) throw new Error("CoinGecko returned no price");
+  const name = hit.id.charAt(0).toUpperCase() + hit.id.slice(1);
+  return {
+    text:
+      `Crypto price for ${name} (via CoinGecko)\n\n` +
+      `• Price: $${price.toLocaleString("en-US", { maximumFractionDigits: 2 })}\n` +
+      `• Query: "${task}"`,
+  };
+}
+
+async function stooq(task) {
+  const hit = extractFinSymbol(task);
+  if (!hit || hit.kind !== "stock") throw new Error("No stock symbol found in task");
+  const res = await fetch(
+    `https://stooq.com/q/l/?s=${hit.ticker}&f=sd2t2ohlcv&h&e=csv`,
+    { signal: AbortSignal.timeout(REQ_TIMEOUT_MS) }
+  );
+  if (!res.ok) throw new Error(`Stooq HTTP ${res.status}`);
+  const csv = await res.text(); // Symbol,Date,Time,Open,High,Low,Close,Volume
+  const line = (csv.trim().split("\n").pop() || "").split(",");
+  const close = line[5];
+  const date = line[1];
+  if (!close || close === "N/D") throw new Error("Stooq returned no data");
+  return {
+    text:
+      `Stock price for ${hit.ticker.toUpperCase()} (via Stooq)\n\n` +
+      `• Close: $${close} on ${date}\n` +
+      `• Query: "${task}"`,
+  };
+}
+
 // ── LLM providers (research + writing) ───────────────────────────────────────
 
 const RESEARCH_SYSTEM =
@@ -291,6 +371,12 @@ const SIM_RESULTS = {
     `• Precipitation risk: 20% this weekend\n` +
     `• Sunrise 06:42 · Sunset 20:15\n\n` +
     `Simulated provider — add OPENWEATHER_API_KEY for live conditions.`,
+  finance: (task) =>
+    `Market update for: "${task}"\n\n` +
+    `• BTC ≈ $67,400 (+2.1% · 24h)\n` +
+    `• S&P 500 +0.4% · VIX within normal range\n` +
+    `• 3 analysts flag a pullback; momentum indicators mixed\n\n` +
+    `Simulated provider — CoinGecko/Stooq are free and need no key.`,
 };
 
 // ── provider chains ──────────────────────────────────────────────────────────
@@ -323,6 +409,23 @@ const CHAINS = {
       display: "en.wikipedia.org/api/rest_v1/page/summary",
       real: true,
       ready: () => true, // free, no key needed
+      run: wikipedia,
+    },
+    {
+      name: "Research (simulated)",
+      display: "simulated-provider.x402.dev",
+      real: false,
+      ready: () => true,
+      run: (task) => ({ text: SIM_RESULTS.research(task) }),
+    },
+  ],
+  // standalone Wikipedia chain for the engine's "Wikipedia Research" service
+  wikipedia: [
+    {
+      name: "Wikipedia",
+      display: "en.wikipedia.org/api/rest_v1/page/summary",
+      real: true,
+      ready: () => true,
       run: wikipedia,
     },
     {
@@ -407,6 +510,29 @@ const CHAINS = {
       real: false,
       ready: () => true,
       run: (task) => ({ text: SIM_RESULTS.weather(task) }),
+    },
+  ],
+  finance: [
+    {
+      name: "CoinGecko",
+      display: "api.coingecko.com/api/v3/simple/price",
+      real: true,
+      ready: () => true,
+      run: coinGecko,
+    },
+    {
+      name: "Stooq",
+      display: "stooq.com/q/l/",
+      real: true,
+      ready: () => true,
+      run: stooq,
+    },
+    {
+      name: "Finance (simulated)",
+      display: "simulated-provider.x402.dev",
+      real: false,
+      ready: () => true,
+      run: (task) => ({ text: SIM_RESULTS.finance(task) }),
     },
   ],
   grammar: [
