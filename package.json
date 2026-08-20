@@ -9,6 +9,7 @@
     "start": "node index.js",
     "setup-wallet": "node scripts/setup-wallet.js",
     "check-wallet": "node scripts/check-wallet.js",
+    "opt-in": "node scripts/opt-in.mjs",
     "e2e-x402": "node scripts/e2e-x402.mjs"
   },
   "dependencies": {

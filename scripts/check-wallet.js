@@ -13,10 +13,10 @@ const toAddr = (a) => (typeof a === "string" ? a : a.toString());
 
 async function info(client, address) {
   const i = await client.accountInformation(address).do();
-  const usdcAsset = (i.assets ?? []).find((a) => a["asset-id"] === USDC_ASA);
+  const usdcAsset = (i.assets ?? []).find((a) => Number(a.assetId ?? a["asset-id"]) === USDC_ASA);
   return {
     algo: Number(i.amount) / 1e6,
-    usdc: (usdcAsset?.amount ?? 0) / 1e6,
+    usdc: Number(usdcAsset?.amount ?? 0) / 1e6,
     optedIn: Boolean(usdcAsset),
   };
 }

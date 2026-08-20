@@ -28,7 +28,7 @@ async function getBalance(address) {
   const info = await client.accountInformation(address).do();
   return {
     algo: Number(info.amount), // microAlgos
-    assets: (info.assets ?? []).filter((a) => a["asset-id"]) || [],
+    assets: (info.assets ?? []).filter((a) => a.assetId || a["asset-id"]) || [],
   };
 }
 
@@ -67,7 +67,7 @@ async function main() {
   try {
     const p = await getBalance(payerAddr);
     const r = await getBalance(receiverAddr);
-    const usdc = (info) => (info.assets.find((a) => a["asset-id"] === 10458941)?.amount ?? 0) / 1e6;
+    const usdc = (info) => (info.assets.find((a) => Number(a.assetId ?? a["asset-id"]) === 10458941)?.amount ?? 0) / 1e6;
     console.log("\n✔ Current balances:");
     console.log("  payer   :", `${(p.algo / 1_000_000).toFixed(4)} ALGO`, "- USDC:", usdc(p));
     console.log("  payTo   :", `${(r.algo / 1_000_000).toFixed(4)} ALGO`, "- USDC:", usdc(r));
