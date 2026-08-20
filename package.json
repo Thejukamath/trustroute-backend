@@ -8,9 +8,13 @@
     "dev": "node --watch index.js",
     "start": "node index.js",
     "setup-wallet": "node scripts/setup-wallet.js",
-    "check-wallet": "node scripts/check-wallet.js"
+    "check-wallet": "node scripts/check-wallet.js",
+    "e2e-x402": "node scripts/e2e-x402.mjs"
   },
   "dependencies": {
+    "@x402/avm": "^2.23.0",
+    "@x402/core": "^2.23.0",
+    "@x402/express": "^2.23.0",
     "algosdk": "^3.6.0",
     "cors": "^2.8.5",
     "dotenv": "^17.4.2",

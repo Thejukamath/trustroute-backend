@@ -65,6 +65,15 @@ export const CATALOG = {
     primary: "weather-primary.x402.dev",
     backup: "weather-backup.x402.dev",
   },
+  finance: {
+    id: "finance",
+    name: "Finance API",
+    cost: 0.002,
+    reliability: 0.88,
+    latency: 0.7,
+    primary: "finance-primary.x402.dev",
+    backup: "finance-backup.x402.dev",
+  },
 };
 
 export const OUTPUT_TOKENS = {
@@ -75,4 +84,5 @@ export const OUTPUT_TOKENS = {
   code: 540,
   review: 210,
   weather: 60,
+  finance: 120,
 };

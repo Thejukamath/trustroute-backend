@@ -21,7 +21,7 @@ export async function trackPayment({ service, amount, status, timestamp, txId, i
   events.push(event);
 
   const at = new Date(event.ts).toISOString().slice(11, 19);
-  const line = `[GoPlausible] ${at} · ${capitalize(status)} payment for "${service}" · ${Number(amount).toFixed(4)} ALGO${txId ? ` · tx ${txId}` : ""}${error ? ` · ${error}` : ""}`;
+  const line = `[GoPlausible] ${at} · ${capitalize(status)} payment for "${service}" · ${Number(amount).toFixed(4)} USDC${txId ? ` · tx ${txId}` : ""}${error ? ` · ${error}` : ""}`;
   console.log(line);
 
   // Optional: forward to a real GoPlausible endpoint (opt-in via env).
