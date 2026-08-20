@@ -1,15 +1,20 @@
 ﻿{
   "name": "trustroute-server",
   "private": true,
-  "version": "1.0.0",
+"version": "1.0.0",
   "type": "module",
   "main": "index.js",
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "dev": "node --watch index.js",
     "start": "node index.js",
     "setup-wallet": "node scripts/setup-wallet.js",
     "check-wallet": "node scripts/check-wallet.js",
-    "opt-in": "node scripts/opt-in.mjs",`n    "auto-pay": "node scripts/auto-pay.mjs",
+    "opt-in": "node scripts/opt-in.mjs",
+    "auto-pay": "node scripts/auto-pay.mjs",
+    "build": "node --check index.js",
     "e2e-x402": "node scripts/e2e-x402.mjs"
   },
   "dependencies": {
